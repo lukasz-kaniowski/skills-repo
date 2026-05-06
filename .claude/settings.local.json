@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__tessl__query_library_docs",
+      "Bash(pnpm install *)",
+      "Bash(pnpm turbo *)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "tessl"
+  ]
+}

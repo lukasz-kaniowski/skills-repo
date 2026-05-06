@@ -1,0 +1,9 @@
+{
+  "name": "skills-repo",
+  "mode": "vendored",
+  "dependencies": {
+    "tessl/npm-turbo--gen": {
+      "version": "1.13.0"
+    }
+  }
+}
