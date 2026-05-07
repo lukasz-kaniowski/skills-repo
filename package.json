@@ -3,11 +3,12 @@
   "private": true,
   "packageManager": "pnpm@10.17.1",
   "scripts": {
-    "build": "turbo run build",
+    "postinstall": "pnpm rebuild better-sqlite3 2>/dev/null || true",
+    "build": "TURBO_CACHE_DIR=node_modules/.cache/turbo turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "typecheck": "turbo run typecheck",
-    "test": "turbo run test",
+    "lint": "TURBO_CACHE_DIR=node_modules/.cache/turbo turbo run lint",
+    "typecheck": "TURBO_CACHE_DIR=node_modules/.cache/turbo turbo run typecheck",
+    "test": "TURBO_CACHE_DIR=node_modules/.cache/turbo turbo run test",
     "clean": "turbo run clean && rm -rf node_modules",
     "sandcastle": "tsx .sandcastle/main.mts"
   },
