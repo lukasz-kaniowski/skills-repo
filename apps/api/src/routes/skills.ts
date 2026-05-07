@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { OpenAPIHono, createRoute, z } from "@hono/zod-openapi";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { SkillDetail, SkillManifest, SkillSummary } from "@repo/types";
@@ -9,10 +9,101 @@ const NAME_RE = /^[a-z0-9][a-z0-9-]*$/;
 const VERSION_RE = /^[a-zA-Z0-9][a-zA-Z0-9.\-+]*$/;
 const MAX_TARBALL_BYTES = 5 * 1024 * 1024;
 
-export function skillsRoutes(db: Db, storage: Storage): Hono {
-  const app = new Hono();
+const ErrorSchema = z
+  .object({ error: z.string() })
+  .openapi("Error");
 
-  app.get("/", (c) => {
+const SkillSummarySchema = z
+  .object({
+    name: z.string(),
+    version: z.string(),
+    uploadedAt: z.string().datetime(),
+  })
+  .openapi("SkillSummary");
+
+const SkillManifestSchema = z
+  .object({
+    name: z.string(),
+    version: z.string(),
+    description: z.string().optional(),
+  })
+  .openapi("SkillManifest");
+
+const SkillDetailSchema = SkillSummarySchema.extend({
+  manifest: SkillManifestSchema,
+  files: z.array(z.string()),
+}).openapi("SkillDetail");
+
+const NameParam = z.string().regex(NAME_RE).openapi({ example: "my-skill" });
+const VersionParam = z.string().regex(VERSION_RE).openapi({ example: "1.0.0" });
+
+const listSkillsRoute = createRoute({
+  method: "get",
+  path: "/",
+  responses: {
+    200: {
+      content: { "application/json": { schema: z.array(SkillSummarySchema) } },
+      description: "List all skills",
+    },
+  },
+});
+
+const uploadSkillRoute = createRoute({
+  method: "post",
+  path: "/",
+  request: {
+    body: {
+      content: {
+        "multipart/form-data": {
+          schema: z.object({
+            skill: z.any().openapi({ type: "string", format: "binary" }),
+          }),
+        },
+      },
+    },
+  },
+  responses: {
+    201: {
+      content: { "application/json": { schema: SkillSummarySchema } },
+      description: "Skill uploaded successfully",
+    },
+    400: {
+      content: { "application/json": { schema: ErrorSchema } },
+      description: "Bad request",
+    },
+    409: {
+      content: { "application/json": { schema: ErrorSchema } },
+      description: "Conflict — skill already exists",
+    },
+    413: {
+      content: { "application/json": { schema: ErrorSchema } },
+      description: "Tarball exceeds 5MB limit",
+    },
+  },
+});
+
+const getSkillRoute = createRoute({
+  method: "get",
+  path: "/{name}/{version}",
+  request: {
+    params: z.object({ name: NameParam, version: VersionParam }),
+  },
+  responses: {
+    200: {
+      content: { "application/json": { schema: SkillDetailSchema } },
+      description: "Skill details",
+    },
+    404: {
+      content: { "application/json": { schema: ErrorSchema } },
+      description: "Skill not found",
+    },
+  },
+});
+
+export function skillsRoutes(db: Db, storage: Storage): OpenAPIHono {
+  const app = new OpenAPIHono();
+
+  app.openapi(listSkillsRoute, (c) => {
     const rows = db
       .prepare(
         "SELECT name, version, uploaded_at FROM skill_versions ORDER BY uploaded_at DESC",
@@ -26,7 +117,7 @@ export function skillsRoutes(db: Db, storage: Storage): Hono {
     return c.json(summaries);
   });
 
-  app.post("/", async (c) => {
+  app.openapi(uploadSkillRoute, async (c) => {
     const body = await c.req.parseBody();
     const file = body["skill"];
     if (!(file instanceof File)) {
@@ -91,8 +182,8 @@ export function skillsRoutes(db: Db, storage: Storage): Hono {
     }
   });
 
-  app.get("/:name/:version", async (c) => {
-    const { name, version } = c.req.param();
+  app.openapi(getSkillRoute, async (c) => {
+    const { name, version } = c.req.valid("param");
     const row = db
       .prepare(
         "SELECT name, version, uploaded_at, manifest FROM skill_versions WHERE name = ? AND version = ?",
@@ -117,7 +208,7 @@ export function skillsRoutes(db: Db, storage: Storage): Hono {
       manifest: JSON.parse(row.manifest) as SkillManifest,
       files,
     };
-    return c.json(detail);
+    return c.json(detail, 200);
   });
 
   app.get("/:name/:version/files/*", async (c) => {
