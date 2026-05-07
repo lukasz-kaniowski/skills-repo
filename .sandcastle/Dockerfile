@@ -23,22 +23,19 @@ ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 # Rename the base image's "node" user (UID 1000) to "agent".
 # This keeps UID 1000 so that --userns=keep-id (Podman) and
 # --user 1000:1000 (Docker) map to the correct home directory owner.
-RUN usermod -d /home/agent -m -l agent node
+RUN groupmod -n agent node \
+  && usermod -d /home/agent -m -l agent node \
+  && chown -R agent:agent /home/agent \
+  && chmod -R a+rwX /home/agent
+
 USER agent
 
 # Install Claude Code CLI
 RUN curl -fsSL https://claude.ai/install.sh | bash
 
+
 # Add Claude to PATH
 ENV PATH="/home/agent/.local/bin:$PATH"
-
-# Sandcastle's Docker provider runs the container with --user $HOST_UID:$HOST_GID
-# (e.g. 501:20 on macOS), which doesn't match the agent user (UID 1000) that owns
-# /home/agent. Make the home directory world-writable so git, npm, and other tools
-# can create config files (.gitconfig, .npm, etc.) regardless of the runtime UID.
-USER root
-RUN chmod -R 777 /home/agent
-USER agent
 
 WORKDIR /home/agent
 
