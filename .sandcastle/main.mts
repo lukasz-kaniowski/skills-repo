@@ -5,6 +5,7 @@ import { docker } from "@ai-hero/sandcastle/sandboxes/docker";
 // Run this with: npx tsx .sandcastle/main.mts
 // Or add to package.json scripts: "sandcastle": "npx tsx .sandcastle/main.mts"
 
+// @ts-ignore
 await run({
   // A name for this run, shown as a prefix in log output.
   name: "worker",

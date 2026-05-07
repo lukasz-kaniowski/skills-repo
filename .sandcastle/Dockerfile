@@ -15,6 +15,11 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
   && apt-get update && apt-get install -y gh \
   && rm -rf /var/lib/apt/lists/*
 
+# Enable corepack and pre-install pnpm so no interactive prompt or network
+# fetch is needed when "pnpm install" runs inside the sandbox.
+RUN corepack enable && corepack prepare pnpm@10.17.1 --activate
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+
 # Rename the base image's "node" user (UID 1000) to "agent".
 # This keeps UID 1000 so that --userns=keep-id (Podman) and
 # --user 1000:1000 (Docker) map to the correct home directory owner.
@@ -26,6 +31,14 @@ RUN curl -fsSL https://claude.ai/install.sh | bash
 
 # Add Claude to PATH
 ENV PATH="/home/agent/.local/bin:$PATH"
+
+# Sandcastle's Docker provider runs the container with --user $HOST_UID:$HOST_GID
+# (e.g. 501:20 on macOS), which doesn't match the agent user (UID 1000) that owns
+# /home/agent. Make the home directory world-writable so git, npm, and other tools
+# can create config files (.gitconfig, .npm, etc.) regardless of the runtime UID.
+USER root
+RUN chmod -R 777 /home/agent
+USER agent
 
 WORKDIR /home/agent
 
