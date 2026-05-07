@@ -10,6 +10,11 @@ await run({
   // A name for this run, shown as a prefix in log output.
   name: "worker",
 
+  // Render progress and agent output live in the terminal (interactive UI).
+  // Without this, sandcastle writes to .sandcastle/logs/<run>.log silently
+  // and only prints a "tail -f" hint at the start.
+  logging: { type: "stdout" },
+
   // Sandbox provider — Docker is the default runtime.
   // Persist the pnpm content-addressable store on the host so packages
   // downloaded by one iteration are reused by the next (and across runs).

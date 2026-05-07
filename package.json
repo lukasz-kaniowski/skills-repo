@@ -12,7 +12,7 @@
     "sandcastle": "tsx .sandcastle/main.mts"
   },
   "devDependencies": {
-    "@ai-hero/sandcastle": "^0.5.8",
+    "@ai-hero/sandcastle": "^0.5.8/",
     "tsx": "^4.19.2",
     "turbo": "^2.9.9",
     "typescript": "^5.6.3"
