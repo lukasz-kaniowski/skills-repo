@@ -3,7 +3,19 @@
     "allow": [
       "mcp__tessl__query_library_docs",
       "Bash(pnpm install *)",
-      "Bash(pnpm turbo *)"
+      "Bash(pnpm turbo *)",
+      "Bash(pnpm --filter api remove @types/tar)",
+      "Bash(pnpm --filter cli remove @types/tar)",
+      "Bash(pnpm test *)",
+      "Bash(pnpm rebuild *)",
+      "Bash(pnpm approve-builds *)",
+      "Bash(pnpm run *)",
+      "Bash(pnpm typecheck *)",
+      "Bash(pnpm *)",
+      "Bash(curl -fsS http://localhost:3001/)",
+      "Bash(curl -fsS http://localhost:3000/)",
+      "Bash(SKILLS_API=http://localhost:3001 pnpm *)",
+      "Bash(curl -s http://localhost:3001/skills)"
     ]
   },
   "enableAllProjectMcpServers": true,

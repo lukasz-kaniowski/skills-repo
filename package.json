@@ -8,9 +8,11 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "clean": "turbo run clean && rm -rf node_modules"
+    "clean": "turbo run clean && rm -rf node_modules",
+    "sandcastle": "npx tsx .sandcastle/main.mts"
   },
   "devDependencies": {
+    "@ai-hero/sandcastle": "^0.5.8",
     "turbo": "^2.9.9",
     "typescript": "^5.6.3"
   },
