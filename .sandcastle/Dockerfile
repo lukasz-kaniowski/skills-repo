@@ -19,6 +19,15 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
 # fetch is needed when "pnpm install" runs inside the sandbox.
 RUN corepack enable && corepack prepare pnpm@10.17.1 --activate
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+# Make pnpm run non-interactively (e.g. auto-remove incompatible modules
+# directory when host node_modules are copied in for a different platform).
+ENV CI=true
+# Pin the pnpm store and global bin to the agent's home so:
+#   1) the store doesn't leak into the bind-mounted workspace, and
+#   2) the store path is stable for cross-run caching via a bind mount.
+ENV PNPM_HOME=/home/agent/.local/share/pnpm
+ENV npm_config_store_dir=/home/agent/.pnpm-store
+ENV PATH="${PNPM_HOME}:${PATH}"
 
 # Rename the base image's "node" user (UID 1000) to "agent".
 # This keeps UID 1000 so that --userns=keep-id (Podman) and

@@ -11,7 +11,15 @@ await run({
   name: "worker",
 
   // Sandbox provider — Docker is the default runtime.
-  sandbox: docker(),
+  // Persist the pnpm content-addressable store on the host so packages
+  // downloaded by one iteration are reused by the next (and across runs).
+  // The path inside the container must match $npm_config_store_dir from
+  // the Dockerfile.
+  sandbox: docker({
+    mounts: [
+      { hostPath: "~/.cache/sandcastle-pnpm-store", sandboxPath: "/home/agent/.pnpm-store" },
+    ],
+  }),
 
   // The agent provider. Pass a model string to claudeCode() — sonnet balances
   // capability and speed for most tasks. Switch to claude-opus-4-6 for harder
@@ -33,11 +41,10 @@ await run({
   // the host directory directly (no worktree to copy into).
   branchStrategy: { type: "merge-to-head" },
 
-  // Copy node_modules from the host into the worktree before the sandbox
-  // starts. This avoids a full npm install from scratch on every iteration.
-  // The onSandboxReady hook still runs npm install as a safety net to handle
-  // platform-specific binaries and any packages added since the last copy.
-  copyToWorktree: ["node_modules"],
+  // Copying host node_modules is skipped intentionally: macOS host binaries
+  // (sharp, better-sqlite3, esbuild, etc.) are useless inside the Linux
+  // container, so pnpm has to redo them anyway. With the store persisted on
+  // the host (see `mounts` above), `pnpm install --prefer-offline` is fast.
 
   // Lifecycle hooks — commands grouped by where they run (host or sandbox).
   hooks: {
@@ -45,7 +52,7 @@ await run({
       // onSandboxReady runs once after the sandbox is initialised and the repo is
       // synced in, before the agent starts. Use it to install dependencies or run
       // any other setup steps your project needs.
-      onSandboxReady: [{ command: "pnpm install" }],
+      onSandboxReady: [{ command: "pnpm install --prefer-offline" }],
     },
   },
 });
