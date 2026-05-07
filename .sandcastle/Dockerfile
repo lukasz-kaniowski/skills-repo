@@ -25,17 +25,25 @@ ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 # --user 1000:1000 (Docker) map to the correct home directory owner.
 RUN groupmod -n agent node \
   && usermod -d /home/agent -m -l agent node \
-  && chown -R agent:agent /home/agent \
-  && chmod -R a+rwX /home/agent
+  && chown -R agent:agent /home/agent
 
 USER agent
 
 # Install Claude Code CLI
 RUN curl -fsSL https://claude.ai/install.sh | bash
 
-
 # Add Claude to PATH
 ENV PATH="/home/agent/.local/bin:$PATH"
+
+# Sandcastle's Docker provider runs the container with --user $HOST_UID:$HOST_GID
+# (e.g. 501:20 on macOS), which doesn't match the agent user (UID 1000) that owns
+# /home/agent. Make /home/agent and everything inside it world-writable so tools
+# like git, pnpm/corepack, and claude can create config and cache files
+# (.gitconfig, .cache/node/corepack, etc.) regardless of the runtime UID.
+# This must run AFTER all installs so it covers files they created (e.g. .cache).
+USER root
+RUN chmod -R a+rwX /home/agent
+USER agent
 
 WORKDIR /home/agent
 
