@@ -25,3 +25,6 @@ clean:
     pnpm run clean
 
 check: typecheck lint test
+
+sandcastle:
+    pnpm run sandcastle
