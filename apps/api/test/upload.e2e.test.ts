@@ -19,7 +19,7 @@ describe("e2e: cli upload -> api -> fetch", () => {
     dataDir = await mkdtemp(join(tmpdir(), "skills-e2e-data-"));
     skillDir = await mkdtemp(join(tmpdir(), "skills-e2e-skill-"));
 
-    handle = createApp({ dataDir });
+    handle = await createApp({ dataDir });
     server = await new Promise<ServerType>((resolve) => {
       const s = serve({ fetch: handle.app.fetch, port: 0 }, () => resolve(s));
     });

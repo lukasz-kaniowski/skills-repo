@@ -10,7 +10,7 @@ describe("api GET /", () => {
 
   beforeEach(async () => {
     dataDir = await mkdtemp(join(tmpdir(), "skills-api-test-"));
-    handle = createApp({ dataDir });
+    handle = await createApp({ dataDir });
   });
 
   afterEach(async () => {
@@ -36,7 +36,7 @@ describe("api GET /doc", () => {
 
   beforeEach(async () => {
     dataDir = await mkdtemp(join(tmpdir(), "skills-api-test-"));
-    handle = createApp({ dataDir });
+    handle = await createApp({ dataDir });
   });
 
   afterEach(async () => {
