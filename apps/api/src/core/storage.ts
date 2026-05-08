@@ -3,9 +3,7 @@ import { existsSync } from "node:fs";
 import { join, relative, resolve, sep } from "node:path";
 import { Readable } from "node:stream";
 import { x as extractTar } from "tar";
-
-export class ConflictError extends Error {}
-export class NotFoundError extends Error {}
+import { ConflictError, NotFoundError } from "./errors.js";
 
 export class Storage {
   constructor(private root: string) {}
