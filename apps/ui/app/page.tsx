@@ -7,8 +7,8 @@ export default function Home() {
   };
   return (
     <main>
-      <h1>{greeting.message}</h1>
-      <p>{greeting.at}</p>
+      <h1 className="text-2xl font-bold">{greeting.message}</h1>
+      <p className="mt-2 text-muted-foreground">{greeting.at}</p>
     </main>
   );
 }

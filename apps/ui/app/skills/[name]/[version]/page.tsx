@@ -1,12 +1,17 @@
 import Link from "next/link";
-import { getSkill, getSkillFile } from "@/app/api";
+import { getSkill, getSkillFile } from "@/app/api/client";
+import { FileNav } from "@/app/components/file-nav";
+import { FileViewer } from "@/app/components/file-viewer";
 
 interface PageProps {
   params: Promise<{ name: string; version: string }>;
   searchParams: Promise<{ file?: string }>;
 }
 
-export default async function SkillVersionPage({ params, searchParams }: PageProps) {
+export default async function SkillVersionPage({
+  params,
+  searchParams,
+}: PageProps) {
   const { name, version } = await params;
   const { file: requestedFile } = await searchParams;
   const skill = await getSkill(name, version);
@@ -14,46 +19,37 @@ export default async function SkillVersionPage({ params, searchParams }: PagePro
     requestedFile && skill.files.includes(requestedFile)
       ? requestedFile
       : skill.files[0];
-  const content = selected ? await getSkillFile(name, version, selected) : null;
+  const content = selected
+    ? await getSkillFile(name, version, selected)
+    : null;
 
   return (
     <main>
       <p>
-        <Link href="/skills">← all skills</Link>
+        <Link
+          href="/skills"
+          className="text-sm text-muted-foreground hover:text-foreground"
+        >
+          &larr; all skills
+        </Link>
       </p>
-      <h1>
+      <h1 className="mt-2 text-2xl font-bold">
         {skill.name}@{skill.version}
       </h1>
-      {skill.manifest.description && <p>{skill.manifest.description}</p>}
-      <p>
-        <small>uploaded {skill.uploadedAt}</small>
+      {skill.manifest.description && (
+        <p className="mt-1">{skill.manifest.description}</p>
+      )}
+      <p className="mt-1 text-sm text-muted-foreground">
+        uploaded {skill.uploadedAt}
       </p>
-      <div style={{ display: "flex", gap: "2rem" }}>
-        <nav>
-          <h2>files</h2>
-          <ul>
-            {skill.files.map((f) => (
-              <li key={f}>
-                <Link
-                  href={`/skills/${skill.name}/${skill.version}?file=${encodeURIComponent(f)}`}
-                  style={{ fontWeight: f === selected ? "bold" : "normal" }}
-                >
-                  {f}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <section style={{ flex: 1 }}>
-          {selected ? (
-            <>
-              <h2>{selected}</h2>
-              <pre style={{ whiteSpace: "pre-wrap" }}>{content}</pre>
-            </>
-          ) : (
-            <p>this skill has no files</p>
-          )}
-        </section>
+      <div className="mt-6 flex gap-8">
+        <FileNav
+          name={skill.name}
+          version={skill.version}
+          files={skill.files}
+          selected={selected}
+        />
+        <FileViewer filename={selected} content={content} />
       </div>
     </main>
   );

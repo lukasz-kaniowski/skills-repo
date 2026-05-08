@@ -1,7 +1,5 @@
 import type { SkillDetail, SkillSummary } from "@repo/types";
-
-export const apiBase = (): string =>
-  process.env.SKILLS_API ?? "http://localhost:3001";
+import { apiBase } from "./config";
 
 export async function listSkills(): Promise<SkillSummary[]> {
   const res = await fetch(`${apiBase()}/skills`, { cache: "no-store" });
@@ -9,7 +7,10 @@ export async function listSkills(): Promise<SkillSummary[]> {
   return (await res.json()) as SkillSummary[];
 }
 
-export async function getSkill(name: string, version: string): Promise<SkillDetail> {
+export async function getSkill(
+  name: string,
+  version: string,
+): Promise<SkillDetail> {
   const res = await fetch(
     `${apiBase()}/skills/${encodeURIComponent(name)}/${encodeURIComponent(version)}`,
     { cache: "no-store" },
