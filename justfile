@@ -12,6 +12,9 @@ build:
 dev:
     pnpm run dev
 
+serve:
+    pnpm exec turbo run dev --filter=ui --filter=api
+
 test:
     pnpm run test
 

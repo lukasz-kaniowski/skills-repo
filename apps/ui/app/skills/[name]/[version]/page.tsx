@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getSkill, getSkillFile } from "../../../api";
+import { getSkill, getSkillFile } from "@/app/api";
 
 interface PageProps {
   params: Promise<{ name: string; version: string }>;
